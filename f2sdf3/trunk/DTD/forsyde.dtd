@@ -1,0 +1,54 @@
+<!--A ForSyDe process network is a list of leaf processes and (instantiated) composite processes interconnected using signals-->
+<!ELEMENT process_network (port| leaf_process | composite_process| signal)+>
+<!ATTLIST process_network
+	name CDATA #REQUIRED>
+
+<!--A leaf process is constructed from predefined process constructors which accept functions or initial values as their arguments.-->
+<!ELEMENT leaf_process (port+, process_constructor)>
+<!ATTLIST leaf_process
+	name CDATA #REQUIRED>
+
+<!--A composite process is a list of processes and the signals used to connect them together.-->
+<!ELEMENT composite_process (port*)>
+<!ATTLIST composite_process
+	name CDATA #REQUIRED
+	component_name CDATA #REQUIRED
+	>
+
+<!--A unidirectional signal connects an output port of a process to an input port of another process, belongs to a MoC, and has a data type.-->
+<!ELEMENT signal EMPTY>
+<!ATTLIST signal
+	name CDATA #REQUIRED
+	moc (sdf | sy | de | ct) "sy"
+	type CDATA #REQUIRED
+	source CDATA #REQUIRED
+	source_port CDATA #REQUIRED
+	target CDATA #REQUIRED
+	target_port CDATA #REQUIRED
+	>
+
+<!--A process port is either an input port or an output port, and belongs to a specific MoC.-->
+<!ELEMENT port EMPTY>
+<!ATTLIST port
+	name CDATA #REQUIRED
+	moc (sdf | sy | de | ct) "sy"
+	direction (in | out) "in"
+	type CDATA #IMPLIED
+	bound_process CDATA #IMPLIED
+	bound_port CDATA #IMPLIED
+	>
+
+<!--A process constructor is a skeleton which captures a set of predefined behaviors.-->
+<!ELEMENT process_constructor (argument*)>
+<!ATTLIST process_constructor
+	name CDATA #REQUIRED
+	moc (sdf | sy | de | ct) "sy"
+	>
+
+<!--The argument passed to process constructors (either function or value).-->
+<!ELEMENT argument EMPTY>
+<!ATTLIST argument
+	name CDATA #REQUIRED
+	type CDATA #IMPLIED
+	value CDATA #REQUIRED
+	>
