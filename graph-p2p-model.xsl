@@ -84,9 +84,6 @@
       <xsl:otherwise>
 	<xsl:variable name="current_edge" select="$edges[1]"/>
 	<xsl:variable name="target_node" select="//graph/node[@name = $current_edge/@target]"/>
-	<xsl:message>#CURRENT EDGE: <xsl:copy-of select="$current_edge"/>
-	GOES TO NODE: <xsl:copy-of select="$target_node"/> 
-	COUNT: <xsl:value-of select="$count"/></xsl:message>
 	<xsl:apply-templates select="$target_node" mode="traverse_graph_for_virtual_connections">
 	  <xsl:with-param name="count" select="$count"/>
 	  <xsl:with-param name="input_name" select="$current_edge/@target_port"/>
@@ -114,7 +111,7 @@
       <xsl:variable name="no_of_prev_signals" select="sum(preceding-sibling::output/@output_count)"/>
       <xsl:if test="$count &gt; $no_of_prev_signals and $count &lt;= $no_of_prev_signals + @output_count">
 	<xsl:variable name="next_count" select="$count - $no_of_prev_signals"/>
-	<unzip node_name="{$current_node/@name}" rate="{@rate}" debug="{$count}" debug1="{$next_count}"/>
+	<unzip node_name="{$current_node/@name}" rate="{@rate}" debug="{$count}" debug1="{$no_of_prev_signals}"/>
 	<xsl:apply-templates select="." mode="output_fanout_handler">
 	  <xsl:with-param name="count" select="$next_count"/>
 	</xsl:apply-templates>
