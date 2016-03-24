@@ -59,7 +59,11 @@
     <xsl:variable name="this" select="."/>
     <xsl:variable name="edge">
       <xsl:choose>
+<<<<<<< HEAD
 	<xsl:when test="($node/@kind = 'constant' or $node/@kind = 'source') and starts-with(@output, 'take_val')">
+=======
+	<xsl:when test="($node/@kind = 'constant' or $node/@kind = 'source' or $node/@kind = 'file_source') and starts-with(@output, 'take_val')">
+>>>>>>> d83a36aecf7b9b0ac0208b090cef26adba9dadec
 	  <edge name="{@from}_{@output}_{$count}" moc="{$node/@moc}" type="unsigned long long" source="{@from}" source_port="{@output}_{$count}" target="FILL ME" target_port="FILL_ME" token_size="" initial_tokens="0" tokens="" signal_count="1" source_kind="{$node/@kind}" target_kind="FILL ME" source_rate="{@rate}" target_rate="FILL ME"/>
 	</xsl:when>
 	<xsl:otherwise>
