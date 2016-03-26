@@ -16,8 +16,7 @@
     
     <xsl:template match="signal" mode="graph">
 	<edge name="{@name}" 
-	      moc="{@moc}" 
-	      type="{@type}" 
+	      moc="{@moc}"  
 	      source="{@source}" 
 	      source_port="{@source_port}" 
 	      target="{@target}" 

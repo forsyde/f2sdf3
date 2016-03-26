@@ -47,15 +47,16 @@
 	    </xsl:choose>
 	</xsl:variable>
 
-	<xsl:if test="$debug"><xsl:message>[p2p-factors-upd-rates] : intermediate rates for '<xsl:value-of select="@from"/>': 
-	  * target_actor   : <xsl:value-of select="$target_actor/@name"/> 
-	  * zip_factor     : <xsl:value-of select="$zip_factor"/>
-	  * unzip_factor   : <xsl:value-of select="$unzip_factor"/>
-	  * channel_factor : <xsl:value-of select="$channel_factor"/>
-	  * prod_rate      : <xsl:value-of select="$prod_rate"/> 
-	  * cons_rate      : <xsl:value-of select="$cons_rate"/> 
-	</xsl:message></xsl:if>
-	<connection from="{@from}" output="{@output}" rate="{$prod_rate}" output_count="{@output_count}">
+	<xsl:if test="$debug"><xsl:message>[p2p-factors-upd-rates] : '<xsl:value-of select="@from"
+	/>': target_actor=<xsl:value-of select="$target_actor/@name"
+	/>; zip_factor=<xsl:value-of select="$zip_factor"
+	/>; unzip_factor=<xsl:value-of select="$unzip_factor"
+	/>; channel_factor=<xsl:value-of select="$channel_factor"
+	/>; prod_rate=<xsl:value-of select="$prod_rate"
+	/>; cons_rate=<xsl:value-of select="$cons_rate"/></xsl:message></xsl:if>
+	<connection>
+	    <xsl:copy-of select="./@*"/>
+	    <xsl:attribute name="rate"><xsl:value-of select="$prod_rate"/></xsl:attribute>
 	    <virtual_link count="{virtual_link/@count}">
 		<xsl:for-each select="virtual_link/* except $target_actor">
 		    <xsl:copy-of select="."/>
@@ -99,7 +100,8 @@
     <!-- Based on the channel structure, delays may represent more than one initial token -->
     
     <xsl:template match="connection" mode="p2p-initial-tokens">
-	<connection from="{@from}" output="{@output}" rate="{@rate}" output_count="{@output_count}">
+	<connection>
+	    <xsl:copy-of select="./@*"/>
 	    <virtual_link count="{virtual_link/@count}">
 		<xsl:apply-templates select="virtual_link/*[1]" mode="p2p-initial-tokens">
 		    <xsl:with-param name="factor" select="1"/>
@@ -155,28 +157,29 @@
     <xsl:template match="actor" mode="p2p-initial-tokens">
 	<xsl:copy-of select="." />
     </xsl:template>
-    
-    
+        
   <!-- Remove zips, unzips, etc -->
   <!-- ======================== -->
   
   <xsl:template match="connection" mode="p2p-remove-zips-unzips">
-      <xsl:if test="$debug"><xsl:message>[p2p-remove-zips-unzips] : removing zips and unzips from connection '<xsl:value-of select="@from"/>' </xsl:message></xsl:if>
-      <connection from="{@from}" output="{@output}" rate="{@rate}" output_count="{@output_count}">
-	  <virtual_link count="{virtual_link/@count}">
+      <xsl:if test="$debug"><xsl:message>[p2p-remove-zips-unzips] : <xsl:value-of select="@from"/> </xsl:message></xsl:if>
+      <connection>
+	    <xsl:copy-of select="./@*"/>
+	    <virtual_link count="{virtual_link/@count}">
   	      <xsl:for-each select="virtual_link/fanout | virtual_link/delay | virtual_link/actor">
   		  <xsl:copy-of select="."/>
   	      </xsl:for-each>
 	  </virtual_link>
       </connection>
   </xsl:template>
-
   
   <!-- Merge fanouts -->
   <!-- ============= -->
   
   <xsl:template match="connection" mode="p2p-remove-chained-fanouts">
-      <connection from="{@from}" output="{@output}" rate="{@rate}" output_count="{@output_count}">
+      <xsl:if test="$debug"><xsl:message>[p2p-remove-chained-fanouts] : <xsl:value-of select="@from"/> </xsl:message></xsl:if>
+      <connection>
+	  <xsl:copy-of select="./@*"/>
 	  <virtual_link count="{virtual_link/@count}">
   	      <xsl:for-each select="virtual_link/*">
   		  <xsl:if test="not (self::fanout and (preceding-sibling::fanout[1]/position() + 1 = position()))">
@@ -188,8 +191,10 @@
   </xsl:template>
   
   <xsl:template match="connection" mode="p2p-remove-all-fanouts">
-      <connection from="{@from}" output="{@output}" rate="{@rate}" output_count="{@output_count}">
-	  <virtual_link count="{virtual_link/@count}">
+      <xsl:if test="$debug"><xsl:message>[p2p-remove-all-fanouts] : <xsl:value-of select="@from"/> </xsl:message></xsl:if>
+      <connection>
+	    <xsl:copy-of select="./@*"/>
+	    <virtual_link count="{virtual_link/@count}">
   	      <xsl:for-each select="virtual_link/delay | virtual_link/actor">
   		  <xsl:copy-of select="."/>
   	      </xsl:for-each>
@@ -202,14 +207,56 @@
   <!-- ============== -->
 
   <xsl:template match="connection" mode="p2p-remove-sources">
-      <xsl:param name="graph" />
-      <xsl:variable name="from" select="./@from" />
-      <xsl:variable name="node" select="$graph/graph/node[@name = current()/@from]" />
-      <xsl:if test="not($node/@kind = 'constant' or $node/@kind = 'file_source')" >
+      <xsl:if test="$debug"><xsl:message>[p2p-remove-sources] : <xsl:value-of select="@from"/> </xsl:message></xsl:if>
+      <xsl:if test="not(@kind = 'constant' or @kind = 'file_source')" >
   	  <xsl:copy-of select="."/>
       </xsl:if>
   </xsl:template>
-  
+
+
+  <!-- Remove delays -->
+  <!-- ============= -->
+
+  <xsl:template match="connection" mode="p2p-remove-delays">
+      <xsl:if test="$debug"><xsl:message>[p2p-remove-delays] : <xsl:value-of select="@from"/> </xsl:message></xsl:if>
+      <connection>
+	  <xsl:copy-of select="./@*"/>
+	  <xsl:attribute name="n"><xsl:value-of select="sum(virtual_link/delay/@n)"/> </xsl:attribute>
+	  <virtual_link count="{virtual_link/@count}">
+	      <xsl:for-each select="virtual_link/fanout | virtual_link/actor | virtual_link/zip | virtual_link/unzip " >
+  		  <xsl:copy-of select="."/>
+	      </xsl:for-each>
+	  </virtual_link>
+      </connection>
+  </xsl:template>
+
+
+
+  <!-- Fix types -->
+  <!-- ========= -->
+
+  <xsl:template match="connection" mode="p2p-fix-types">
+      <xsl:if test="$debug"><xsl:message>[p2p-fix-types] : <xsl:value-of select="@from"/> </xsl:message></xsl:if>
+      <connection>
+  	  <xsl:copy-of select="./@*"/>
+  	  <xsl:variable name="channel_type">
+  	      <xsl:choose>
+  		  <xsl:when test="count(zip) &gt; count(unzip)">
+  		      <xsl:value-of select="virtual_link/zip[1]/@type" />
+  		  </xsl:when>
+  		  <xsl:otherwise>
+  		      <xsl:value-of select="virtual_link/unzip[last()]/@type" />
+  		  </xsl:otherwise>
+  	      </xsl:choose>
+  	  </xsl:variable>
+  	  <xsl:if test="$channel_type != ''">
+  	      <xsl:attribute name="type"><xsl:value-of select="$channel_type"/></xsl:attribute>
+  	  </xsl:if>
+  	  <xsl:copy-of select="./virtual_link"/>
+      </connection>
+  </xsl:template>
+
+
   <!-- <xsl:template match="connection" mode="forsyde-constant-source-workaround-add-self-edges-to-sources"> -->
   <!--   <xsl:variable name="node" select="$forsyde-graph/graph/node[@name = current()/@from]" /> -->
   <!--   <xsl:variable name="prev_connections" select="preceding-sibling::connection[@from = current()/@from and ./virtual_link/@count = current()/virtual_link/@count]"/> -->
