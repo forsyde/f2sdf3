@@ -1,0 +1,35 @@
+<!--The root node of a document containing identified types in a ForSyDe process network-->
+<!ELEMENT forsyde_types (type+)>
+
+<!--A type node contains the structure of an identified signal type during the introspection phase. It is identified by its unique name (usually given by the RTTI)-->
+<!ELEMENT type (primitive | custom | array | vector | tuple)+>
+<!ATTLIST type
+	name CDATA #REQUIRED>
+
+<!--A primitive type is a standard C data type-->
+<!ELEMENT primitive EMPTY>
+<!ATTLIST primitive
+	name CDATA #REQUIRED
+	size CDATA #REQUIRED
+	>
+
+<!--A custom type represents user-defined types that cannot be further traversed (such as structs and unions). The designer has to make sure that the RTTI size reflects the objets' real size.-->
+<!ELEMENT custom EMPTY>
+<!ATTLIST custom
+	name CDATA #REQUIRED
+	size CDATA #REQUIRED
+	>
+
+<!--A vector is a variable-sized structured array of other types. Its length cannot be statically determined.-->
+<!ELEMENT vector (primitive | custom | array | vector | tuple)>
+
+<!--An array, as compared to a vector, has a fixed size statically determined-->
+<!ELEMENT array (primitive | custom | array | vector | tuple)>
+<!ATTLIST array 
+	length CDATA #REQUIRED>
+
+<!--A tuple is an ad-hoc collection of other types-->
+<!ELEMENT tuple (primitive | custom | array | vector | tuple)+>
+<!ATTLIST tuple 
+	length CDATA #REQUIRED>
+
